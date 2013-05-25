@@ -1,0 +1,145 @@
+##cubit -nographics -batch -input meshTemplateFull.jou
+set developer on
+
+# APREPRO (An Algebraic Preprocessor for Parameterizing Finite Element Analyses)
+# APREPO to syntax to store variable
+   
+#{_idLoop = 1}
+#{Loop(3)}
+   comment "loop var is" {_idLoop} 
+   #{If(_idLoop==1)}
+      #{_fineSize   = 1.0 }
+      #{_coarseSize = 3.8 }
+   #{EndIf}
+   #{If(_idLoop==2)}
+      #{_fineSize   = 0.5 }
+      #{_coarseSize = 3.0 }
+   #{EndIf}
+   #{If(_idLoop==3)}
+      #{_fineSize   = 0.25}
+      #{_coarseSize = 2.5 }
+   #{EndIf}
+
+   reset
+   # bounding box for ROI (mm)
+   create brick  width 50 height 60 depth 60
+   #{_mainVolume = Id("volume")}
+   comment "main volume =  " {_mainVolume}
+   webcut volume 1 with plane xplane 
+   webcut volume 1 with plane yplane 
+   delete volume 2 3
+   
+   # create region for laser and catheter tip
+   #  active part is about 5mm from catheter tip
+   #  diffusing tip is 10 mm axial
+   webcut volume 1 with plane zplane offset -10  
+   webcut volume 1 with plane zplane offset -5  
+   webcut volume 1 with plane zplane offset  5  
+   #create cylinder radius .75 height 10
+   
+   #  create laser in center of bounding box
+   #       laser params  used
+   #       
+   #       height 100mm
+   #       radius .75mm
+   #       
+   create cylinder radius .75 height 100
+   webcut volume 1 4 5 6 tool volume 7 
+   delete volume 7
+   #
+   ## merge geometry
+   imprint volume   1 4 5 6 8 9 10 11
+   merge volume     1 4 5 6 8 9 10 11
+   
+   # mesh laser tip
+   volume 10 11 size {_fineSize}
+   mesh volume 10 11 
+   
+   # mesh brain and fiber
+   volume 1 4 5 6 8 9                                    size {_coarseSize}
+   # volume 1 radial bias
+   curve  99 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 53
+   curve 101 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 51
+   curve 100 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 54
+   curve 102 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 52
+   # volume 1 axial bias
+   curve  83 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 41
+   curve  98 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 52
+   curve  96 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 51
+   curve  82 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 44
+   curve  81 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 43
+   mesh volume 1
+   # volume 8 axial bias
+   curve  84 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 42
+   mesh volume 8
+   # volume 6 radial bias
+   curve 131 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 69
+   curve 132 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 70
+   mesh volume 6
+   # volume 5 radial bias
+   curve 117 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 59
+   curve 118 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 60
+   mesh volume 5
+   # volume 9 axial bias
+   curve  57 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 26
+   curve 114 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 60
+   curve 112 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 59
+   mesh volume 9
+   # volume 4 radial bias
+   curve 116 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 62
+   curve 115 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 61
+   # volume 4 axial bias
+   curve  59 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 25
+   curve  60 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 27
+   curve  58 scheme    bias fine size {_fineSize} coarse size {_coarseSize} start vertex 28
+   mesh volume 4
+   
+   #
+   group "badhex"  equals quality hex  in volume  all   jacobian high 0.0
+   #
+
+   # reflect to create full object
+   volume all copy reflect x
+   volume all copy reflect y
+   imprint volume all
+   merge volume all
+
+   # export mesh in distinct pieces
+   reset genesis
+   
+   # bc
+   #sideset 2 surface  62 64 72 74 82 84 92 94 66 68 76 78 86 89 96 98
+   #sideset 2 name "neumann" 
+   sideset 3 surface 48 49 61 35 36 71 43 44 55 56 69 79 101 104 105 108 112 113 117 118 123 124 128 132 139 142 143 146 150 151 155 156 161 162 166 170 177 180 181 184 188 189 193 194 199 200 204 208 
+   #surface  48  49  61  35  36  71  43  44  55  56  69  79 visibility on
+   #surface 101 104 105 108 112 113 117 118 123 124 128 132 visibility on
+   #surface 139 142 143 146 150 151 155 156 161 162 166 170 visibility on
+   #surface 177 180 181 184 188 189 193 194 199 200 204 208 visibility on
+   sideset 3 name "cauchy" 
+   # specify nodeset for applicator
+   # skin the applicator to remove the boundary from the nodeset
+   #skin volume 8 10 11 make group 3
+   #group 3 name "appface"
+   nodeset 1 volume 8 10 11 16 18 19 24 26 27 32 34 35
+   #volume 11 19 27 35 visibility on
+   nodeset 1 name "dirichlet" 
+   nodeset 4 surface 60 80 90
+   nodeset 4 name "appboundarynode" 
+   group "appnode" add node in surface in nodeset 4  
+   #nodeset 1 node in group 3 remove
+   #
+   # volume
+   block 1 volume 1 4 5 6 9 12 13 14 15 17 20 21 22 23 25 28 29 30 31 33
+   block 1 name "brain"  
+   block 2 volume 8 10 16 18 24 26 32 34  
+   block 2 name "catheder"  
+   block 3 volume 11 19 27 35
+   block 3 name "laserTip"  
+   volume all scale 0.001
+   #{_meshWriteCmd = "export mesh 'meshTemplateFull"//tostring(_idLoop)//".e' overwrite" }
+   #{DUMP()}
+   {rescan(_meshWriteCmd)}
+   comment "fine size is" {_fineSize} "and coarse size is" {_coarseSize} 
+   # update looping variable
+   #{_idLoop++}
+#{EndLoop}
