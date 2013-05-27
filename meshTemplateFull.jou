@@ -139,6 +139,9 @@ set developer on
    #{_meshWriteCmd = "export mesh 'meshTemplateFull"//tostring(_idLoop)//".e' overwrite" }
    #{DUMP()}
    {rescan(_meshWriteCmd)}
+   #{_meshWriteCmd = "export abaqus 'meshTemplateFull"//tostring(_idLoop)//".inp' overwrite" }
+   #{DUMP()}
+   {rescan(_meshWriteCmd)}
    comment "fine size is" {_fineSize} "and coarse size is" {_coarseSize} 
    # update looping variable
    #{_idLoop++}
