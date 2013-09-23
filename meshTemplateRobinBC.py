@@ -144,11 +144,11 @@ cubit.cmd('sideset 4 name "neumann" ')
 ## #   skin volume 8 10 11 16 18 19 24 26 27 32 34 35 make group 3
 ## #   group 3 name "appface"
 ## #   group "appnode" add node in face in group 3
-## cubit.cmd('nodeset 1 volume 18 21')
-## cubit.cmd('nodeset 1 surface 149 ')
-## cubit.cmd('nodeset 1 name "dirichlet"')
+cubit.cmd('nodeset 1 volume 8 10 11 13 15 16 18 20 26 28 29 30 32 33 34 36 42 44 45 46 48 49 50 52 58 60 61 62 64 65 66 68 21 37 53 69')
+cubit.cmd('nodeset 1 name "dirichlet"')
 ## #   #nodeset 1 node in group 4 remove
 ## #   nodeset 2 node in group 4
+## #   nodeset 2 surface 60 80 90
 ## #   nodeset 2 name "appboundarynode"
 ## # volume
 cubit.cmd('block 1 volume 1 4 5 6 9 14 19 22 23 24 25 27 31 35 38 39 40 41 43 47 51 54 55 56 57 59 63 67')
