@@ -1,5 +1,7 @@
-# clarox -nographics -nojournal -noecho -batch journalfilename.py
-# from cubit cmd script editor
+# cmd line
+# $ /opt/apps/cubit/v13.2/bin/claro -nographics -batch python meshTemplateRobinBCSurfaceSource.py
+# 
+# from cubit GUI cmd script editor
 #   exec(file("file.py"))
 cubit.cmd('set developer on')
 cubit.cmd('   reset')
