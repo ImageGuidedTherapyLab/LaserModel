@@ -62,8 +62,8 @@ cubit.cmd('delete volume 17')
 cubit.cmd('imprint volume 1 4 5 6 8 9 10 11 13 14 15 16 18 19 20 21')
 cubit.cmd('merge volume   1 4 5 6 8 9 10 11 13 14 15 16 18 19 20 21')
 
-meshResolutions = [(1.0 , 3.8 ), (0.5 , 3.0 ), (0.25, 2.5 )]
-resolutionID = 1
+resolutionID = 'lores'
+meshResolutions = {'lores':(1.0 , 3.8 ), 'midres':(0.5 , 3.0 ), 'hires':(0.25, 2.5 )}
 (fineSize,coarseSize) = meshResolutions[resolutionID]
 # mesh laser tip
 cubit.cmd('volume      10 11 15 16 20 21 size %f' % fineSize )
@@ -132,6 +132,13 @@ cubit.cmd('imprint volume all')
 cubit.cmd('merge volume all')
 
 
+# create second cylinder for mesh indepenent nodeset
+# offset by epsilon to avoid divide by zero in source evaluation
+epsilon = 0.05
+cubit.cmd('create cylinder radius %f height 10' % ( outerRadius - epsilon ))
+cubit.cmd('volume      70 size 0.1' )
+cubit.cmd('mesh volume      70 ' )
+
 ## # bc
 cubit.cmd('skin volume all make sideset 4')
 cubit.cmd('sideset 4 name "neumann" ')
@@ -146,8 +153,12 @@ cubit.cmd('sideset 4 name "neumann" ')
 ## #   group "appnode" add node in face in group 3
 cubit.cmd('nodeset 1 volume 8 10 11 13 15 16 18 20 26 28 29 30 32 33 34 36 42 44 45 46 48 49 50 52 58 60 61 62 64 65 66 68 21 37 53 69')
 cubit.cmd('nodeset 1 name "dirichlet"')
+# mesh dependent node set
 cubit.cmd('nodeset 2 surface 90 206 278 350')
 cubit.cmd('nodeset 2 name "sources"')
+# mesh independent node set
+cubit.cmd('nodeset 3 surface 402 ')
+cubit.cmd('nodeset 3 name "IndependentSources"')
 ## #   #nodeset 1 node in group 4 remove
 ## #   nodeset 2 node in group 4
 ## #   nodeset 2 surface 60 80 90
@@ -159,6 +170,8 @@ cubit.cmd('block 2 volume 8 10 13 15 16 18 20 26 28 30 32 33 34 36 42 44 46 48 4
 cubit.cmd('block 2 name "catheder"  ')
 cubit.cmd('block 3 volume 11 29 45 61')
 cubit.cmd('block 3 name "laserTip"  ')
+cubit.cmd('block 4 volume 70 ')
+cubit.cmd('block 4 name "laserSources"  ')
 cubit.cmd('volume all scale 0.001')
-cubit.cmd('export mesh "meshTemplateRobinBCSurfaceSource%d.e" overwrite' % resolutionID)
-cubit.cmd('export abaqus "meshTemplateRobinBCSurfaceSource%d.inp" overwrite' % resolutionID)
+cubit.cmd('export mesh "meshTemplateRobinBCSurfaceSource%s.e" overwrite' % resolutionID)
+cubit.cmd('export abaqus "meshTemplateRobinBCSurfaceSource%s.inp" overwrite' % resolutionID)
